@@ -5,8 +5,11 @@ import pandas as pd
 import seaborn as sns
 # import warnings.filterwarnings('ignore')
 
+## Setting up the path
+path = 'D:/Madhura/Algorithms_Practice/Basic_Modelling/PCA/'
+
 # Importing the data
-df = pd.read_csv('D:/Madhura/Self learning/Wine.csv')
+df = pd.read_csv(path+'Wine.csv')
 
 # check if all columns (except target column ["name" column in this case] are numerical)
 # even if one of the features is of type that is "not" numerical e.g. string, obj etc .. then PCA cannot be executed
@@ -17,8 +20,7 @@ df.info()
 plt.figure(figsize = (8, 7))
 sns.heatmap(df.corr(), annot = True, cmap="YlGnBu")
 # plt.show()
-plt.savefig('D:/Madhura/Self learning/Wine_Corrplot.png')
-
+plt.savefig(path+'Wine_Corrplot.png')
 
 # pairplots another way of observing relationship between columns
 # plt.figure(figsize=(8,7))
@@ -43,8 +45,7 @@ for target, color in zip(targets,colors):
 ax.legend(targets)
 ax.grid()
 # plt.show()
-plt.savefig('D:/Madhura/Self learning/Wine_scatter.png')
-
+plt.savefig(path+'Wine_scatter.png')
 
 #  Getting predictor variables to X
 X = df.drop(['name'],axis=1)
@@ -63,6 +64,7 @@ pca = PCA()
 principalComponents = pca.fit_transform(x)
 PC_df = pd.DataFrame(data = principalComponents)
 print(PC_df.head())
+print(pca.explained_variance_ratio_)
 
 # for Data Vizualization we need only Top 2 features 
 from sklearn.decomposition import PCA
@@ -94,6 +96,5 @@ for target, color in zip(targets,colors):
 ax.legend(targets)
 ax.grid()
 #plt.show()
-plt.savefig('D:/Madhura/Self learning/Wine_scatter_PCA.png')
+plt.savefig(path+'Wine_scatter_PCA.png')
 
-print(pca.explained_variance_ratio_)
