@@ -7,6 +7,7 @@ import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
+
 ## Setting up the path
 path = 'D:/Madhura/Algorithms_Practice/Basic_Modelling/PCA/'
 
@@ -15,19 +16,7 @@ df = pd.read_csv(path+'Wine.csv')
 
 # check if all columns (except target column ["name" column in this case] are numerical)
 # even if one of the features is of type that is "not" numerical e.g. string, obj etc .. then PCA cannot be executed
-df.info()
-
-# Exploratory Data Aanalysis(EDA)
-# checking correlation inside the dataset
-plt.figure(figsize = (8, 7))
-sns.heatmap(df.corr(), annot = True, cmap="YlGnBu")
-# plt.show()
-plt.savefig(path+'Wine_Corrplot.png')
-
-# pairplots another way of observing relationship between columns
-# plt.figure(figsize=(8,7))
-# sns.pairplot(df)
-# plt.show()
+# df.info()
 
 # for purpose of viewing classification 
 # we take 2 features with good correlation with Target Variable
@@ -47,37 +36,61 @@ for target, color in zip(targets,colors):
 ax.legend(targets)
 ax.grid()
 # plt.show()
-plt.savefig(path+'Wine_scatter.png')
 
 #  Getting predictor variables to X
 X = df.drop(['name'],axis=1)
 
 y= df['name']#class variable
 
-#X.describe()
-
 ## Standardization
 x = StandardScaler().fit_transform(X)
 
-# Let us view entire possible transformation for df under consideration
-pca = PCA()
-principalComponents = pca.fit_transform(x)
-PC_df = pd.DataFrame(data = principalComponents)
-print(PC_df.head())
-print(pca.explained_variance_ratio_)
+## Finding variance covariance matrix
+cov_x = np.cov(x.T)
+# print(cov_x)
 
-# for Data Vizualization we need only Top 2 features 
-# from sklearn.decomposition import PCA
-pca = PCA(n_components=2)
-principalComponents = pca.fit_transform(x)
-PC_df = pd.DataFrame(data = principalComponents
-             , columns = ['PC1', 'PC2'])
-print(PC_df.head())
-df.head()
+## Get Eigen values and eigen vectors from the variance covariance matrix
+eig_vals, eig_vecs = np.linalg.eig(cov_x)
+print("Eigen values are: ",eig_vals)
+print(eig_vecs.shape)
+#eig_vals.sort(reverse = True)
+#print("Sorted eigen values",eig_vals)
 
-data_viz_Df = pd.concat([PC_df, df[['name']]], axis = 1)
-print(data_viz_Df.head())
+eig_pairs= [(np.abs(eig_vals[i]),eig_vecs[:,i]) for i in range(len(eig_vals))]
+eig_pairs.sort(key=lambda x: x[0],reverse=True)
+for i in eig_pairs:
+	print(i[0])
 
+### Finding contribution
+tot = sum(eig_vals)
+var_exp = [(i/tot)*100 for i in eig_vals]
+cum_var_exp = np.cumsum(var_exp)
+print("cumulative variance explained: \n",cum_var_exp)
+
+## Per expained by 1st PC
+# print(eig_vals[0])
+# print(eig_vals[0] / sum(eig_vals))
+# print((eig_vals[0]+eig_vals[1]) / sum(eig_vals))
+
+# Project data points to the eigen vector
+#print(x.T.shape)	
+# df_pc = x.dot(eig_vecs.T[:,:2])
+# df_pc = pd.DataFrame(df_pc)
+# df_pc.columns = ['PC1','PC2'] 
+#df_pc.columns = ['PC1','PC2','PC3','PC4','PC5','PC6','PC7','PC8','PC9','PC10','PC11','PC12','PC13'] 
+#print(df_pc.type)
+
+matrix_w = np.hstack((eig_pairs[0][1].reshape(13,1),
+	eig_pairs[1][1].reshape(13,1)))
+
+print(matrix_w)
+
+df_pc	= x.dot(matrix_w)
+df_pc = pd.DataFrame(df_pc)
+df_pc.columns = ['PC1','PC2'] 
+
+data_viz_Df = pd.concat([df_pc, df[['name']]], axis = 1)
+# print(data_viz_Df.head())
 
 # code to plot classification on 2-D plane with PC1 and PC2
 fig = plt.figure(figsize = (8,8))
@@ -95,6 +108,8 @@ for target, color in zip(targets,colors):
                , s = 50)
 ax.legend(targets)
 ax.grid()
-#plt.show()
-plt.savefig(path+'Wine_scatter_PCA.png')
+plt.show()
+#plt.savefig(path+'Wine_scatter_PCA_Scratch.png')
 
+
+		
